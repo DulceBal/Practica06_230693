@@ -35,24 +35,24 @@ const sessionSchema = new mongoose.Schema({
     nickname: { 
         type: String, 
         required: true, 
-        set: encrypt,
-        get: decrypt
+
     },
     status: {
         type: String,
-        enum: ["Activa", "Inactiva", "Finalizada por el Usuario", "Finalizada por falla de Sistema"],
+        enum: ["Activa", "Inactiva", "Sesion finalizada por el usuario", "Sesion finalizada por falla de Sistema"],
         required: true,
         default: "Activa",
     },
     createdAt: { type: Date, default: Date.now },
     lastAccessed: { type: Date, default: Date.now },
     clientData: {
-        clientIp: { type: String, set: encrypt, get: decrypt },
-        clientMac: { type: String, set: encrypt, get: decrypt },
+        clientIp: { type: String },
+        clientMac: { type: String },
     },
     serverData: {
-        serverIp: { type: String, set: encrypt, get: decrypt },
-        serverMac: { type: String, set: encrypt, get: decrypt },
+        serverIp: { type: String},
+        serverMac: { type: String},
+        versionKey: false
     }
 }, { toJSON: { getters: true }, toObject: { getters: true } }); 
 

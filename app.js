@@ -1,12 +1,14 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import session from 'express-session';
-
 import os from 'os';
 import moment from 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
 import Session from './src/models/sessions.js';
 import connectDB from './database.js';
+
+
+
 const app = express();
 app.use(express.json());
 app.use(
@@ -34,7 +36,7 @@ const getLocalIP = () => {
 };
 
 // Ruta de bienvenida
-app.get('/', (req, res) => {
+app.get('/welcome', (req, res) => {
     res.status(200).json({
         message: 'Welcome al API de control de sesiones',
         author: 'Dulce Balderas Gomez ',
@@ -81,7 +83,7 @@ app.post('/logout', async (req, res) => {
     }
 
     //  Marcar la sesión como finalizada
-    session.status = 'Finalizada por el Usuario';
+    session.status = 'Sesion finalizada por el usuario';
     await session.save();
 
     //  Destruir la sesión en Express
@@ -133,11 +135,11 @@ app.post('/status', async (req, res) => {
 
     // Verificar si ya pasó más de 2 minutos de inactividad
     const now = new Date();
-    const twoMinutesAgo = new Date(now - 120000);
+    const fiveMinutesAgo = new Date(now - 300000);
 
-    if (session.lastAccessed < twoMinutesAgo) {
+    if (session.lastAccessed < fiveMinutesAgo) {
         // Cerrar sesión automáticamente y actualizar el estado en la base de datos
-        session.status = 'Finalizada por inactividad';
+        session.status = ' Sesion finalizada por inactividad';
         await session.save();
         return res.status(403).json({ message: 'No hay sesión activa' });
     }
@@ -167,7 +169,7 @@ app.get('/allSessions', async (req, res) => {
 });
 
 // Obtener todas las sesiones activas
-app.get('/allCurrent', async (req, res) => {
+app.get('/allCurrentSessions', async (req, res) => {
     try {
         const activeSessions = await Session.find({ status: 'Activa' });
         if (activeSessions.length === 0) {
@@ -180,7 +182,7 @@ app.get('/allCurrent', async (req, res) => {
 });
 
 // Eliminar todas las sesiones (PELIGROSO)
-app.delete('/deleteAll', async (req, res) => {
+app.delete('/deleteAllSessions', async (req, res) => {
     try {
         await Session.deleteMany({});
         res.status(200).json({ message: 'Todas las sesiones eliminadas' });
@@ -192,7 +194,7 @@ app.delete('/deleteAll', async (req, res) => {
 // Cerrar sesiones inactivas automáticamente después de 2 minutos
 setInterval(async () => {
     const now = new Date();
-    const twoMinutesAgo = new Date(now - 120000);
+    const twoMinutesAgo = new Date(now - 12000);
 
     // Buscar sesiones inactivas y cambiar su estado
     const sessionsToClose = await Session.find({
@@ -202,12 +204,12 @@ setInterval(async () => {
 
     if (sessionsToClose.length > 0) {
         for (const session of sessionsToClose) {
-            session.status = 'Finalizada por falla de Sistema';
+            session.status = 'Sesion finalizada por falla de Sistema';
             await session.save();
         }
         console.log(`Cerradas ${sessionsToClose.length} sesiones inactivas.`);
     }
 }, 60000); // Se ejecuta cada 60 segundos
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3500;
 app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
